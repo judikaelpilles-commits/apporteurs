@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CD Énergie — Réseau Apporteurs</title>
+<style>
+/* ═══════════════════════════════════════════════════
+   POLICES EMBARQUÉES (pas besoin d'internet)
+═══════════════════════════════════════════════════ */
+@import url('data:text/css,');
+
+:root {
+  --bg-admin: #0d0f14;
+  --surf-admin: #13161e;
+  --surf2-admin: #1a1e28;
+  --bord-admin: #252936;
+  --acc-admin: #e8b84b;
+  --acc2-admin: #4be8a8;
+  --acc3-admin: #4b9ee8;
+  --txt-admin: #e8eaf0;
+  --muted-admin: #5a6070;
+  --danger-admin: #e84b6a;
+
+  --bg-p: #f5f2eb;
+  --surf-p: #ffffff;
+  --surf2-p: #f0ece3;
+  --bord-p: #e0d9cc;
+  --acc-p: #c8520a;
+  --acc-light-p: #fde8d8;
+  --acc2-p: #1a6b3a;
+  --acc2-light-p: #d4edde;
+  --txt-p: #1a1510;
+  --muted-p: #8a7e70;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; min-height:100vh; }
+
+/* ─── ÉCRAN DE CHOIX ────────────────────────────── */
+#screen-choice {
+  min-height:100vh;
+  background: linear-gradient(135deg, #0d0f14 0%, #1a1e28 100%);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:32px 24px; gap:20px;
+}
+.choice-logo {
+  font-size:13px; font-weight:800; letter-spacing:0.12em;
+  color:#e8b84b; text-transform:uppercase; margin-bottom:8px;
+}
+.choice-sub { font-size:13px; color:#5a6070; margin-bottom:32px; }
+.choice-btn {
+  width:100%; max-width:340px;
+  border:none; border-radius:16px; padding:22px 24px;
+  cursor:pointer; text-align:left; transition:transform 0.12s, box-shadow 0.12s;
+  display:flex; align-items:center; gap:16px;
+}
+.choice-btn:active { transform:scale(0.97); }
+.choice-btn.admin {
+  background:#13161e; border:1px solid #252936;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+.choice-btn.admin:hover { border-color:#e8b84b; }
+.choice-btn.portail {
+  background:#ffffff;
+  box-shadow: 0 4px 24px rgba(200,82,10,0.15);
+}
+.choice-btn.portail:hover { box-shadow: 0 6px 32px rgba(200,82,10,0.25); }
+.choice-icon {
+  width:48px; height:48px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+}
+.choice-icon.admin { background:#e8b84b22; color:#e8b84b; }
+.choice-icon.portail { background:#fde8d8; color:#c8520a; }
+.choice-text {}
+.choice-label { font-size:15px; font-weight:700; margin-bottom:3px; }
+.choice-label.admin { color:#e8eaf0; }
+.choice-label.portail { color:#1a1510; }
+.choice-desc { font-size:12px; }
+.choice-desc.admin { color:#5a6070; }
+.choice-desc.portail { color:#8a7e70; }
+
+/* ─── ADMIN ─────────────────────────────────────── */
+#screen-admin {
+  display:none; min-height:100vh;
+  background:#0d0f14; color:#e8eaf0;
+  font-size:14px;
+}
+#screen-admin.visible { display:flex; }
+
+.adm-wrap { display:flex; min-height:100vh; width:100%; }
+.adm-sidebar {
+  width:210px; min-width:210px;
+  background:#13161e; border-right:1px solid #252936;
+  padding:20px 0; display:flex; flex-direction:column;
+  position:sticky; top:0; height:100vh;
+}
+.adm-logo { padding:0 18px 20px; border-bottom:1px solid #252936; margin-bottom:14px; }
+.adm-logo-name { font-size:13px; font-weight:800; letter-spacing:0.1em; color:#e8b84b; text-transform:uppercase; }
+.adm-logo-sub { font-size:10px; color:#5a6070; font-family:monospace; margin-top:2px; }
+.adm-nav { cursor:pointer; display:flex; align-items:center; gap:9px;
+  padding:9px 18px; border-left:2px solid transparent; font-size:13px; color:#5a6070;
+  transition:all 0.13s; }
+.adm-nav:hover,.adm-nav.active { color:#e8eaf0; background:rgba(232,184,75,0.06); border-left-color:#e8b84b; }
+.adm-back { margin-top:auto; padding:10px 18px; font-size:12px; color:#5a6070;
+  cursor:pointer; border-top:1px solid #252936; padding-top:16px; }
+.adm-back:hover { color:#e8eaf0; }
+
+.adm-main { flex:1; overflow-x:hidden; }
+.adm-topbar { padding:18px 28px; border-bottom:1px solid #252936; display:flex;
+  justify-content:space-between; align-items:center; background:#13161e;
+  position:sticky; top:0; z-index:10; }
+.adm-page-title { font-size:17px; font-weight:700; }
+.adm-content { padding:24px 28px; }
+
+/* KPI admin */
+.adm-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.adm-kpi { background:#13161e; border:1px solid #252936; border-radius:10px; padding:18px; position:relative; overflow:hidden; }
+.adm-kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.adm-kpi.y::before{background:#e8b84b} .adm-kpi.g::before{background:#4be8a8}
+.adm-kpi.b::before{background:#4b9ee8} .adm-kpi.r::before{background:#e84b6a}
+.adm-kpi-label { font-size:10px; color:#5a6070; text-transform:uppercase; letter-spacing:.08em; font-family:monospace; margin-bottom:7px; }
+.adm-kpi-val { font-size:24px; font-weight:700; }
+.adm-kpi-val.y{color:#e8b84b} .adm-kpi-val.g{color:#4be8a8} .adm-kpi-val.b{color:#4b9ee8} .adm-kpi-val.r{color:#e84b6a}
+.adm-kpi-sub { font-size:11px; color:#5a6070; margin-top:3px; }
+
+/* Table admin */
+.adm-table-wrap { background:#13161e; border:1px solid #252936; border-radius:10px; overflow:hidden; }
+.adm-table-head { padding:14px 18px; border-bottom:1px solid #252936; display:flex; justify-content:space-between; align-items:center; }
+.adm-table-title { font-size:13px; font-weight:700; }
+table { width:100%; border-collapse:collapse; }
+th { padding:10px 14px; text-align:left; font-size:10px; font-family:monospace; color:#5a6070;
+  text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid #252936; background:#1a1e28; }
+td { padding:11px 14px; border-bottom:1px solid #252936; font-size:13px; vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(255,255,255,0.015); }
+
+/* Badges admin */
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-family:monospace; text-transform:uppercase; }
+.b-actif{background:rgba(75,232,168,.15);color:#4be8a8} .b-inactif{background:rgba(90,96,112,.2);color:#5a6070}
+.b-signe{background:rgba(75,232,168,.15);color:#4be8a8} .b-prospect{background:rgba(232,184,75,.15);color:#e8b84b}
+.b-negocie{background:rgba(75,158,232,.15);color:#4b9ee8} .b-perdu{background:rgba(232,75,106,.15);color:#e84b6a}
+.b-portail{background:rgba(75,158,232,.1);color:#4b9ee8}
+
+/* Btns admin */
+.btn { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:6px;
+  border:none; cursor:pointer; font-size:12px; font-family:inherit; transition:all .13s; font-weight:500; }
+.btn-primary{background:#e8b84b;color:#0d0f14} .btn-primary:hover{background:#f0c96a}
+.btn-ghost{background:transparent;color:#5a6070;border:1px solid #252936} .btn-ghost:hover{color:#e8eaf0;border-color:#5a6070}
+.btn-danger{background:rgba(232,75,106,.15);color:#e84b6a;border:1px solid rgba(232,75,106,.3)} .btn-danger:hover{background:rgba(232,75,106,.25)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.actions-row{display:flex;gap:6px}
+.search-bar{position:relative} .search-bar input{padding-left:28px;width:200px;}
+.search-bar::before{content:'⌕';position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#5a6070;font-size:15px}
+
+/* Inputs admin */
+input,select,textarea {
+  background:#1a1e28; border:1px solid #252936; border-radius:6px; padding:8px 11px;
+  color:#e8eaf0; font-family:inherit; font-size:13px; outline:none; transition:border-color .13s; width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:#e8b84b}
+select option{background:#1a1e28}
+textarea{resize:vertical;min-height:65px}
+
+/* Modal admin */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#13161e;border:1px solid #252936;border-radius:12px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-head{padding:18px 22px;border-bottom:1px solid #252936;display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:14px;font-weight:700}
+.modal-body{padding:22px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:14px 22px;border-top:1px solid #252936;display:flex;gap:8px;justify-content:flex-end}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:10px;color:#5a6070;text-transform:uppercase;letter-spacing:.06em;font-family:monospace}
+.close-btn{background:none;border:none;color:#5a6070;cursor:pointer;font-size:17px;padding:3px}
+.close-btn:hover{color:#e8eaf0}
+
+/* Avatar admin */
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.avatar-row{display:flex;align-items:center;gap:9px}
+.avatar-name{font-weight:500} .avatar-sector{font-size:11px;color:#5a6070}
+.mono{font-family:monospace} .text-muted{color:#5a6070} .text-acc{color:#e8b84b} .text-g{color:#4be8a8}
+.empty{padding:44px;text-align:center;color:#5a6070} .empty-icon{font-size:28px;margin-bottom:10px}
+
+/* Section/Tab admin */
+.adm-section{display:none} .adm-section.active{display:block}
+.progress-bar{height:4px;background:#1a1e28;border-radius:2px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:#e8b84b;border-radius:2px;transition:width .3s}
+
+/* ─── PORTAIL APPORTEUR ─────────────────────────── */
+#screen-login,#screen-app { display:none; }
+#screen-login.visible { display:flex; }
+#screen-app.visible { display:flex; }
+
+#screen-login {
+  min-height:100vh; flex-direction:column; align-items:center; justify-content:center;
+  padding:32px 24px; background:#f5f2eb; position:relative; overflow:hidden;
+}
+#screen-login::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;
+  background:radial-gradient(circle,rgba(200,82,10,.12) 0%,transparent 70%);pointer-events:none}
+#screen-login::after{content:'';position:absolute;bottom:-60px;left:-60px;width:250px;height:250px;
+  background:radial-gradient(circle,rgba(26,107,58,.1) 0%,transparent 70%);pointer-events:none}
+
+.login-card{background:#fff;border-radius:24px;padding:38px 30px;width:100%;max-width:360px;
+  box-shadow:0 8px 40px rgba(26,21,16,.14);position:relative;z-index:1;
+  animation:slideUp .45s cubic-bezier(.22,1,.36,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}60%{transform:translateX(6px)}}
+
+.login-brand{display:flex;align-items:center;gap:11px;margin-bottom:28px}
+.brand-icon{width:42px;height:42px;background:#c8520a;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:19px;color:#fff;font-weight:700;flex-shrink:0}
+.brand-name{font-size:15px;font-weight:800;color:#1a1510}
+.brand-sub{font-size:11px;color:#8a7e70;margin-top:1px}
+.login-title{font-size:22px;font-weight:700;color:#1a1510;margin-bottom:5px}
+.login-sub{color:#8a7e70;font-size:13px;margin-bottom:26px;line-height:1.5}
+.code-input-wrap{margin-bottom:14px}
+.code-input{width:100%;background:#f0ece3;border:2px solid #e0d9cc;border-radius:13px;
+  padding:15px 18px;font-family:monospace;font-size:20px;font-weight:500;letter-spacing:.15em;
+  text-align:center;text-transform:uppercase;color:#1a1510;outline:none;transition:border-color .2s,background .2s}
+.code-input:focus{border-color:#c8520a;background:#fff}
+.code-input.error{border-color:#d63c3c;animation:shake .4s}
+.code-hint{font-size:11px;color:#8a7e70;text-align:center;margin-bottom:18px}
+.error-msg{font-size:12px;color:#d63c3c;text-align:center;margin-bottom:10px;min-height:16px}
+.btn-login{width:100%;background:#c8520a;color:#fff;border:none;border-radius:13px;padding:15px;
+  font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;letter-spacing:.02em}
+.btn-login:hover{background:#b04608}
+.back-choice-link{font-size:12px;color:#8a7e70;text-align:center;margin-top:16px;cursor:pointer}
+.back-choice-link:hover{color:#1a1510}
+
+/* App portail */
+#screen-app{min-height:100vh;flex-direction:column;background:#f5f2eb;max-width:430px;margin:0 auto;animation:fadeIn .35s ease}
+.app-header{background:#fff;padding:18px 18px 14px;border-bottom:1px solid #e0d9cc;position:sticky;top:0;z-index:20}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.header-brand{font-size:12px;font-weight:800;color:#c8520a;letter-spacing:.06em}
+.header-logout{font-size:11px;color:#8a7e70;cursor:pointer;padding:5px 9px;border-radius:7px;border:1px solid #e0d9cc}
+.header-welcome{font-size:19px;font-weight:700;color:#1a1510}
+.header-code{font-family:monospace;font-size:10px;color:#8a7e70;margin-top:1px}
+
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
+  background:#fff;border-top:1px solid #e0d9cc;display:flex;z-index:30;
+  padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:11px 4px;cursor:pointer;
+  border:none;background:none;color:#8a7e70;font-family:inherit;font-size:10px;gap:3px;transition:color .13s}
+.nav-btn .nav-icon{font-size:19px;line-height:1}
+.nav-btn.active{color:#c8520a} .nav-btn.active .nav-label{font-weight:600}
+
+.app-content{flex:1;overflow-y:auto;padding:18px 14px 88px}
+.page{display:none} .page.active{display:block;animation:fadeIn .22s ease}
+
+/* KPI portail */
+.kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:18px}
+.kpi-card{background:#fff;border-radius:15px;padding:16px 14px;box-shadow:0 2px 16px rgba(26,21,16,.07);position:relative;overflow:hidden}
+.kpi-card.full{grid-column:1/-1}
+.kpi-card::after{content:'';position:absolute;bottom:-18px;right:-18px;width:65px;height:65px;border-radius:50%;opacity:.07}
+.kpi-card.orange::after{background:#c8520a} .kpi-card.green::after{background:#1a6b3a}
+.kpi-label{font-size:10px;color:#8a7e70;text-transform:uppercase;letter-spacing:.06em;font-family:monospace;margin-bottom:7px}
+.kpi-val{font-size:26px;font-weight:700;line-height:1}
+.kpi-val.orange{color:#c8520a} .kpi-val.green{color:#1a6b3a}
+.kpi-sub{font-size:11px;color:#8a7e70;margin-top:5px}
+
+/* Ring */
+.ring-card{background:#fff;border-radius:15px;padding:18px;margin-bottom:18px;
+  box-shadow:0 2px 16px rgba(26,21,16,.07);display:flex;align-items:center;gap:14px}
+.ring-svg{flex-shrink:0}
+.ring-title{font-size:13px;font-weight:700;color:#1a1510;margin-bottom:3px}
+.ring-desc{font-size:11px;color:#8a7e70;line-height:1.4}
+
+/* Section title portail */
+.sec-title{font-size:13px;font-weight:700;color:#1a1510;margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center}
+.sec-count{background:#f0ece3;border-radius:20px;padding:2px 9px;font-family:monospace;font-size:10px;color:#8a7e70}
+.btn-add-sm{background:#c8520a;color:#fff;border:none;border-radius:20px;padding:5px 13px;
+  font-size:11px;font-weight:700;cursor:pointer}
+
+/* Client cards portail */
+.client-card{background:#fff;border-radius:13px;padding:14px;margin-bottom:9px;
+  box-shadow:0 2px 14px rgba(26,21,16,.06);display:flex;align-items:flex-start;gap:10px}
+.client-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.dot-signe{background:#1a6b3a} .dot-prospect{background:#e0a020} .dot-negocie{background:#3a7fc1} .dot-perdu{background:#c13a3a}
+.client-body{flex:1}
+.client-name{font-weight:600;font-size:13px;margin-bottom:2px;color:#1a1510}
+.client-meta{font-size:11px;color:#8a7e70;display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+.client-right{text-align:right;flex-shrink:0}
+.client-ca{font-family:monospace;font-size:12px;font-weight:500;color:#c8520a}
+.client-date{font-size:10px;color:#8a7e70;margin-top:1px}
+
+.p-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:500;text-transform:uppercase;font-family:monospace}
+.pb-signe{background:#d4edde;color:#1a6b3a} .pb-prospect{background:#fef3d0;color:#a07010}
+.pb-negocie{background:#dceeff;color:#2a5f9e} .pb-perdu{background:#fde0e0;color:#9e2a2a}
+.pb-portail{background:#fff3cd;color:#856404;font-size:8px}
+
+/* Prime cards */
+.prime-card{background:#fff;border-radius:13px;padding:14px;margin-bottom:9px;box-shadow:0 2px 14px rgba(26,21,16,.06)}
+.prime-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.prime-client{font-weight:600;font-size:13px;color:#1a1510}
+.prime-amount{font-size:17px;font-weight:700;color:#1a6b3a}
+.prime-bar-label{display:flex;justify-content:space-between;font-size:10px;color:#8a7e70;margin-bottom:4px;font-family:monospace}
+.prime-bar{height:5px;background:#f0ece3;border-radius:3px;overflow:hidden}
+.prime-bar-fill{height:100%;border-radius:3px;background:#1a6b3a;transition:width .8s cubic-bezier(.22,1,.36,1)}
+.prime-bar-fill.partial{background:#e0a020}
+.prime-footer{display:flex;justify-content:space-between;font-size:10px;color:#8a7e70;margin-top:8px}
+
+/* Profil */
+.profil-card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 2px 16px rgba(26,21,16,.07);margin-bottom:14px;text-align:center}
+.profil-avatar{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;color:#fff;margin:0 auto 12px}
+.profil-name{font-size:19px;font-weight:700;color:#1a1510;margin-bottom:3px}
+.profil-sector{color:#8a7e70;font-size:12px;margin-bottom:14px}
+.profil-code-label{font-size:10px;color:#8a7e70;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.profil-code-badge{display:inline-block;background:#f0ece3;border:1px solid #e0d9cc;border-radius:7px;
+  padding:7px 14px;font-family:monospace;font-size:15px;letter-spacing:.15em;color:#1a1510;font-weight:500}
+.info-row{background:#fff;border-radius:13px;padding:13px 14px;margin-bottom:9px;
+  box-shadow:0 2px 14px rgba(26,21,16,.06);display:flex;justify-content:space-between;align-items:center}
+.info-label{font-size:12px;color:#8a7e70} .info-val{font-size:13px;font-weight:500;color:#1a1510}
+.taux-pill{background:#fde8d8;color:#c8520a;border-radius:20px;padding:4px 11px;font-family:monospace;font-size:13px;font-weight:500}
+
+/* Empty */
+.empty-state{text-align:center;padding:38px 18px;color:#8a7e70}
+.empty-state .ei{font-size:32px;margin-bottom:10px;opacity:.4}
+.empty-state .et{font-size:13px}
+
+/* FAB */
+.fab{position:fixed;bottom:74px;right:calc(50% - 197px);width:50px;height:50px;
+  background:#c8520a;border-radius:50%;border:none;color:#fff;font-size:24px;cursor:pointer;
+  box-shadow:0 4px 18px rgba(200,82,10,.4);display:flex;align-items:center;justify-content:center;z-index:25}
+@media(max-width:430px){.fab{right:14px}}
+
+/* Drawer */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(26,21,16,.5);z-index:40}
+.drawer-overlay.open{display:block;animation:fadeIn .18s ease}
+.drawer{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+  width:100%;max-width:430px;background:#fff;border-radius:18px 18px 0 0;z-index:50;
+  padding-bottom:env(safe-area-inset-bottom,14px);transition:transform .32s cubic-bezier(.22,1,.36,1);max-height:92vh;overflow-y:auto}
+.drawer.open{transform:translateX(-50%) translateY(0)}
+.drawer-handle{width:34px;height:4px;background:#e0d9cc;border-radius:2px;margin:11px auto 0}
+.drawer-head{padding:14px 18px 11px;border-bottom:1px solid #e0d9cc;display:flex;justify-content:space-between;align-items:center}
+.drawer-title{font-size:16px;font-weight:700;color:#1a1510}
+.drawer-close{width:30px;height:30px;border-radius:50%;background:#f0ece3;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:15px;color:#8a7e70}
+.drawer-body{padding:18px;display:flex;flex-direction:column;gap:13px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10px;color:#8a7e70;text-transform:uppercase;letter-spacing:.07em;font-family:monospace;font-weight:500}
+.field input,.field select,.field textarea{background:#f0ece3;border:1.5px solid #e0d9cc;border-radius:11px;
+  padding:12px 13px;font-family:inherit;font-size:14px;color:#1a1510;outline:none;transition:border-color .13s;width:100%;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#c8520a;background:#fff}
+.field textarea{resize:none;min-height:68px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.drawer-info{background:#f0ece3;border-radius:11px;padding:11px 13px;font-size:11px;color:#8a7e70;line-height:1.5}
+.btn-submit{background:#c8520a;color:#fff;border:none;border-radius:13px;padding:15px;
+  font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:2px}
+.btn-submit:hover{background:#b04608}
+
+/* Toast */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(14px);
+  background:#1a1510;color:#fff;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:500;
+  z-index:100;opacity:0;transition:all .28s cubic-bezier(.22,1,.36,1);white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.green{background:#1a6b3a}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     ÉCRAN DE CHOIX
+═══════════════════════════════════════════════ -->
+<div id="screen-choice">
+  <div class="choice-logo">CD Énergie</div>
+  <div class="choice-sub">Réseau apporteurs d'affaires</div>
+
+  <button class="choice-btn admin" onclick="goAdmin()">
+    <div class="choice-icon admin">⚙</div>
+    <div class="choice-text">
+      <div class="choice-label admin">Espace Admin</div>
+      <div class="choice-desc admin">Gérer apporteurs, clients, primes</div>
+    </div>
+  </button>
+
+  <button class="choice-btn portail" onclick="goPortail()">
+    <div class="choice-icon portail">⚡</div>
+    <div class="choice-text">
+      <div class="choice-label portail">Mon Espace Apporteur</div>
+      <div class="choice-desc portail">Suivre mes affaires et primes</div>
+    </div>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ADMIN
+═══════════════════════════════════════════════ -->
+<div id="screen-admin">
+  <div class="adm-wrap">
+    <aside class="adm-sidebar">
+      <div class="adm-logo">
+        <div class="adm-logo-name">CD Énergie</div>
+        <div class="adm-logo-sub">Administration</div>
+      </div>
+      <div class="adm-nav active" onclick="admShow('dashboard',this)">◈ &nbsp;Tableau de bord</div>
+      <div class="adm-nav" onclick="admShow('apporteurs',this)">◎ &nbsp;Apporteurs</div>
+      <div class="adm-nav" onclick="admShow('clients',this)">◻ &nbsp;Clients apportés</div>
+      <div class="adm-nav" onclick="admShow('primes',this)">◆ &nbsp;Primes &amp; CA</div>
+      <div class="adm-back" onclick="backChoice()">← Retour accueil</div>
+    </aside>
+    <main class="adm-main">
+
+      <!-- DASHBOARD -->
+      <div id="adm-dashboard" class="adm-section active">
+        <div class="adm-topbar"><span class="adm-page-title">Vue d'ensemble</span><span class="text-muted mono" id="adm-date" style="font-size:11px"></span></div>
+        <div class="adm-content">
+          <div class="adm-kpi-grid">
+            <div class="adm-kpi y"><div class="adm-kpi-label">Apporteurs actifs</div><div class="adm-kpi-val y" id="k-ap">0</div></div>
+            <div class="adm-kpi g"><div class="adm-kpi-label">Clients apportés</div><div class="adm-kpi-val g" id="k-cl">0</div></div>
+            <div class="adm-kpi b"><div class="adm-kpi-label">CA généré</div><div class="adm-kpi-val b" id="k-ca">0 €</div></div>
+            <div class="adm-kpi r"><div class="adm-kpi-label">Primes versées</div><div class="adm-kpi-val r" id="k-pr">0 €</div></div>
+          </div>
+          <div class="adm-table-wrap">
+            <div class="adm-table-head"><span class="adm-table-title">Top apporteurs</span></div>
+            <table><thead><tr><th>Apporteur</th><th>Clients</th><th>CA</th><th>Primes</th><th>Conversion</th></tr></thead>
+            <tbody id="top-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPORTEURS -->
+      <div id="adm-apporteurs" class="adm-section">
+        <div class="adm-topbar">
+          <span class="adm-page-title">Apporteurs</span>
+          <div class="actions-row">
+            <div class="search-bar"><input type="text" id="srch-ap" placeholder="Rechercher…" oninput="renderAp()"></div>
+            <button class="btn btn-primary" onclick="openModal('m-ap')">+ Ajouter</button>
+          </div>
+        </div>
+        <div class="adm-content">
+          <div class="adm-table-wrap">
+            <table><thead><tr><th>Apporteur</th><th>Secteur</th><th>Code</th><th>Taux</th><th>Clients</th><th>CA</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="ap-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div id="adm-clients" class="adm-section">
+        <div class="adm-topbar">
+          <span class="adm-page-title">Clients apportés</span>
+          <div class="actions-row">
+            <div class="search-bar"><input type="text" id="srch-cl" placeholder="Rechercher…" oninput="renderCl()"></div>
+            <button class="btn btn-primary" onclick="openModal('m-cl')">+ Ajouter</button>
+          </div>
+        </div>
+        <div class="adm-content">
+          <div class="adm-table-wrap">
+            <table><thead><tr><th>Entreprise</th><th>Apporteur</th><th>Service</th><th>CA</th><th>Statut</th><th>Origine</th><th>Date</th><th></th></tr></thead>
+            <tbody id="cl-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIMES -->
+      <div id="adm-primes" class="adm-section">
+        <div class="adm-topbar">
+          <span class="adm-page-title">Primes &amp; CA</span>
+          <button class="btn btn-primary" onclick="openModal('m-pr')">+ Versement</button>
+        </div>
+        <div class="adm-content">
+          <div class="adm-kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="adm-kpi y"><div class="adm-kpi-label">Primes dues</div><div class="adm-kpi-val y" id="pr-dues">0 €</div></div>
+            <div class="adm-kpi g"><div class="adm-kpi-label">Versées</div><div class="adm-kpi-val g" id="pr-vers">0 €</div></div>
+            <div class="adm-kpi r"><div class="adm-kpi-label">Solde à verser</div><div class="adm-kpi-val r" id="pr-rest">0 €</div></div>
+          </div>
+          <div class="adm-table-wrap">
+            <div class="adm-table-head"><span class="adm-table-title">Historique</span></div>
+            <table><thead><tr><th>Apporteur</th><th>Client</th><th>CA</th><th>Prime</th><th>Versé</th><th>Date</th><th>Statut</th></tr></thead>
+            <tbody id="pr-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PORTAIL LOGIN
+═══════════════════════════════════════════════ -->
+<div id="screen-login">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-name">CD Énergie</div>
+        <div class="brand-sub">Espace apporteurs</div>
+      </div>
+    </div>
+    <div class="login-title">Bienvenue 👋</div>
+    <div class="login-sub">Saisissez votre code personnel pour accéder à votre tableau de bord.</div>
+    <div class="code-input-wrap">
+      <input type="text" class="code-input" id="code-input" placeholder="MONCODE" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="code-hint">Code fourni par CD Énergie · ex : MARC2025</div>
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-login" onclick="tryLogin()">Accéder à mon espace →</button>
+    <div class="back-choice-link" onclick="backChoice()">← Retour</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PORTAIL APP
+═══════════════════════════════════════════════ -->
+<div id="screen-app">
+  <div class="app-header">
+    <div class="header-top">
+      <div class="header-brand">CD ÉNERGIE</div>
+      <div class="header-logout" onclick="logout()">Déconnexion</div>
+    </div>
+    <div class="header-welcome" id="header-name">Bonjour —</div>
+    <div class="header-code" id="header-code">Code : —</div>
+  </div>
+
+  <div class="app-content">
+    <!-- ACCUEIL -->
+    <div class="page active" id="page-home">
+      <div class="kpi-row">
+        <div class="kpi-card orange"><div class="kpi-label">Clients apportés</div><div class="kpi-val orange" id="p-kpi-nb">0</div><div class="kpi-sub">au total</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Contrats signés</div><div class="kpi-val green" id="p-kpi-sg">0</div><div class="kpi-sub">confirmés</div></div>
+        <div class="kpi-card full orange"><div class="kpi-label">CA total généré</div><div class="kpi-val orange" id="p-kpi-ca">0 €</div><div class="kpi-sub">sur contrats signés</div></div>
+      </div>
+      <div class="ring-card">
+        <svg class="ring-svg" width="62" height="62" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#f0ece3" stroke-width="7"/>
+          <circle id="ring-c" cx="32" cy="32" r="26" fill="none" stroke="#c8520a" stroke-width="7"
+            stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="163.4"
+            transform="rotate(-90 32 32)" style="transition:stroke-dashoffset 1s cubic-bezier(.22,1,.36,1)"/>
+          <text x="32" y="37" text-anchor="middle" fill="#1a1510" font-family="system-ui" font-size="13" font-weight="700" id="ring-pct">0%</text>
+        </svg>
+        <div>
+          <div class="ring-title">Taux de conversion</div>
+          <div class="ring-desc" id="ring-desc">—</div>
+        </div>
+      </div>
+      <div class="sec-title">Dernières affaires <span class="sec-count" id="p-cl-count">0</span></div>
+      <div id="home-list"></div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="page" id="page-clients">
+      <div class="sec-title">
+        Mes clients <span class="sec-count" id="p-all-count">0</span>
+        <button class="btn-add-sm" onclick="openDrawer()">+ Nouveau</button>
+      </div>
+      <div id="all-list"></div>
+    </div>
+
+    <!-- PRIMES -->
+    <div class="page" id="page-primes">
+      <div class="kpi-row" style="margin-bottom:18px">
+        <div class="kpi-card green"><div class="kpi-label">Primes versées</div><div class="kpi-val green" id="p-vers">0 €</div></div>
+        <div class="kpi-card orange"><div class="kpi-label">À venir</div><div class="kpi-val orange" id="p-rest">0 €</div></div>
+      </div>
+      <div class="sec-title">Détail par affaire</div>
+      <div id="prime-list"></div>
+    </div>
+
+    <!-- PROFIL -->
+    <div class="page" id="page-profil">
+      <div class="profil-card">
+        <div class="profil-avatar" id="p-avatar">AB</div>
+        <div class="profil-name" id="p-name">—</div>
+        <div class="profil-sector" id="p-sector">—</div>
+        <div class="profil-code-label">Mon code d'accès</div>
+        <div class="profil-code-badge" id="p-code">—</div>
+      </div>
+      <div class="info-row"><span class="info-label">Taux de prime</span><span class="taux-pill" id="p-taux">—</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span class="info-val" id="p-email">—</span></div>
+      <div class="info-row"><span class="info-label">Téléphone</span><span class="info-val" id="p-tel">—</span></div>
+      <div class="info-row"><span class="info-label">Statut</span><span class="info-val" id="p-statut">—</span></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="showPage('home')"><span class="nav-icon">⌂</span><span class="nav-label">Accueil</span></button>
+    <button class="nav-btn" id="nav-clients" onclick="showPage('clients')"><span class="nav-icon">◻</span><span class="nav-label">Clients</span></button>
+    <button class="nav-btn" id="nav-primes" onclick="showPage('primes')"><span class="nav-icon">◆</span><span class="nav-label">Primes</span></button>
+    <button class="nav-btn" id="nav-profil" onclick="showPage('profil')"><span class="nav-icon">◎</span><span class="nav-label">Profil</span></button>
+  </nav>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" style="display:none" onclick="openDrawer()" title="Signaler un client">+</button>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head">
+    <span class="drawer-title">Signaler un client</span>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="field"><label>Nom de l'entreprise *</label><input type="text" id="d-ent" placeholder="Ex : SARL Dupont Industrie" autocomplete="off"></div>
+    <div class="field-row">
+      <div class="field"><label>Interlocuteur</label><input type="text" id="d-contact" placeholder="Prénom Nom"></div>
+      <div class="field"><label>Téléphone</label><input type="tel" id="d-tel" placeholder="06 …"></div>
+    </div>
+    <div class="field"><label>Email du contact</label><input type="email" id="d-email" placeholder="contact@entreprise.fr"></div>
+    <div class="field"><label>Service souhaité</label>
+      <select id="d-service">
+        <option value="CSPE">Récupération CSPE</option>
+        <option value="Contrat énergie">Révision contrat énergie</option>
+        <option value="Audit">Audit énergétique</option>
+        <option value="Autre">Autre / Je ne sais pas</option>
+      </select>
+    </div>
+    <div class="field"><label>Contexte / Note</label><textarea id="d-notes" placeholder="Ex : Patron de scierie, facture élevée, ouvert à un RDV…"></textarea></div>
+    <div class="drawer-info">⚡ CD Énergie prendra contact sous 5 jours ouvrés. Suivez l'avancement dans l'onglet <strong>Clients</strong>.</div>
+    <button class="btn-submit" onclick="submitClient()">Envoyer la mise en relation →</button>
+  </div>
+</div>
+
+<!-- MODALS ADMIN -->
+<!-- Modal apporteur -->
+<div class="modal-overlay" id="m-ap">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="m-ap-title">Nouvel apporteur</span><button class="close-btn" onclick="closeModal('m-ap')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ap-edit-id">
+      <div class="form-row">
+        <div class="form-group"><label>Prénom</label><input type="text" id="ap-prenom" placeholder="Jean"></div>
+        <div class="form-group"><label>Nom</label><input type="text" id="ap-nom" placeholder="Dupont"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" id="ap-email"></div>
+        <div class="form-group"><label>Téléphone</label><input type="text" id="ap-tel"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Société</label><input type="text" id="ap-soc"></div>
+        <div class="form-group"><label>Secteur / Métier</label><input type="text" id="ap-sect" placeholder="Expert-comptable…"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Taux prime (%)</label><input type="number" id="ap-taux" placeholder="10" min="0" max="50" step="0.5"></div>
+        <div class="form-group"><label>Code portail</label><input type="text" id="ap-code" placeholder="MARC2025" style="font-family:monospace;text-transform:uppercase;letter-spacing:.08em"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full"><label>Statut</label>
+          <select id="ap-statut"><option value="Actif">Actif</option><option value="Inactif">Inactif</option></select>
+        </div>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="ap-notes" placeholder="Zone géo, réseau, remarques…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('m-ap')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAp()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal client -->
+<div class="modal-overlay" id="m-cl">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="m-cl-title">Nouveau client</span><button class="close-btn" onclick="closeModal('m-cl')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cl-edit-id">
+      <div class="form-group full"><label>Entreprise *</label><input type="text" id="cl-ent" placeholder="SARL Dupont Industrie"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Contact</label><input type="text" id="cl-contact"></div>
+        <div class="form-group"><label>Apporteur</label><select id="cl-ap"><option value="">— Sélectionner —</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Service</label>
+          <select id="cl-service">
+            <option value="CSPE">Récupération CSPE</option>
+            <option value="Contrat énergie">Révision contrat énergie</option>
+            <option value="Audit">Audit énergétique</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>CA contrat (€)</label><input type="number" id="cl-ca" placeholder="0" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Statut</label>
+          <select id="cl-statut">
+            <option value="Prospect">Prospect</option><option value="Négocié">Négocié</option>
+            <option value="Signé">Signé</option><option value="Perdu">Perdu</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Date</label><input type="date" id="cl-date"></div>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="cl-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('m-cl')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCl()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal prime -->
+<div class="modal-overlay" id="m-pr">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Versement de prime</span><button class="close-btn" onclick="closeModal('m-pr')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Apporteur</label><select id="pr-ap" onchange="fillPrClients()"><option value="">—</option></select></div>
+        <div class="form-group"><label>Client</label><select id="pr-cl" onchange="fillPrCalc()"><option value="">—</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>CA contrat (€)</label><input type="number" id="pr-ca" readonly style="opacity:.6"></div>
+        <div class="form-group"><label>Prime calculée (€)</label><input type="number" id="pr-calc" readonly style="opacity:.6"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Montant versé (€)</label><input type="number" id="pr-mont" placeholder="0" min="0"></div>
+        <div class="form-group"><label>Date versement</label><input type="date" id="pr-date"></div>
+      </div>
+      <div class="form-group"><label>Mode paiement</label>
+        <select id="pr-mode"><option value="Virement">Virement</option><option value="Chèque">Chèque</option><option value="Espèces">Espèces</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('m-pr')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePr()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FICHE CLIENT -->
+<div class="modal-overlay" id="m-fiche">
+  <div class="modal" style="width:480px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="fiche-titre">&#x2014;</div>
+        <div style="font-size:11px;color:#5a6070;margin-top:2px" id="fiche-service">&#x2014;</div>
+      </div>
+      <button class="close-btn" onclick="closeModal('m-fiche')">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="gap:0;padding:0">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #252936">
+        <div style="padding:16px 18px;border-right:1px solid #252936">
+          <div style="font-size:10px;color:#5a6070;font-family:monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Statut</div>
+          <span class="badge" id="fiche-statut-badge">&#x2014;</span>
+        </div>
+        <div style="padding:16px 18px;border-right:1px solid #252936">
+          <div style="font-size:10px;color:#5a6070;font-family:monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">CA contrat</div>
+          <div style="font-size:16px;font-weight:700;color:#e8b84b;font-family:monospace" id="fiche-ca">&#x2014;</div>
+        </div>
+        <div style="padding:16px 18px">
+          <div style="font-size:10px;color:#5a6070;font-family:monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Date</div>
+          <div style="font-size:13px;font-family:monospace;color:#e8eaf0" id="fiche-date">&#x2014;</div>
+        </div>
+      </div>
+      <div style="padding:18px;border-bottom:1px solid #252936">
+        <div style="font-size:11px;font-weight:700;color:#e8b84b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Contact</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:#5a6070">Interlocuteur</span>
+            <span style="font-size:13px;font-weight:500;color:#e8eaf0" id="fiche-contact">&#x2014;</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:#5a6070">T&eacute;l&eacute;phone</span>
+            <a id="fiche-tel" href="#" style="font-size:13px;font-weight:500;color:#4b9ee8;text-decoration:none">&#x2014;</a>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:#5a6070">Email</span>
+            <a id="fiche-email" href="#" style="font-size:13px;font-weight:500;color:#4b9ee8;text-decoration:none;word-break:break-all">&#x2014;</a>
+          </div>
+        </div>
+      </div>
+      <div style="padding:18px;border-bottom:1px solid #252936">
+        <div style="font-size:11px;font-weight:700;color:#e8b84b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Apporteur</div>
+        <div style="display:flex;align-items:center;gap:10px" id="fiche-apporteur-row">&#x2014;</div>
+      </div>
+      <div style="padding:18px">
+        <div style="font-size:11px;font-weight:700;color:#e8b84b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Notes</div>
+        <div style="font-size:13px;color:#8a9ab0;line-height:1.6;min-height:32px" id="fiche-notes">&#x2014;</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('m-fiche')">Fermer</button>
+      <button class="btn btn-primary" id="fiche-edit-btn">&#x270E; Modifier</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG JSONBIN
+// ═══════════════════════════════════════════════
+const BIN_ID  = '6a044690250b1311c3433753';
+const API_KEY = '$2a$10$c9sXykugftTglcQSleX2ouCI3JqZlzDODXmKqBZ58fw4Ln/4KHyGu';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+let apporteurs = [];
+let clients    = [];
+let paiements  = [];
+let _saving    = false;
+
+// ── LocalStorage cache (fallback + perf) ────────
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+// ── Statut de synchro ────────────────────────────
+function setSyncStatus(state, msg){
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  const cfg={ok:{c:'#4be8a8',i:'●'},saving:{c:'#e8b84b',i:'↑'},error:{c:'#e84b6a',i:'✕'},loading:{c:'#5a6070',i:'…'}};
+  const s=cfg[state]||cfg.ok;
+  el.innerHTML=`<span style="color:${s.c}">${s.i}</span> ${msg}`;
+}
+
+// ── Charger depuis JSONBin ───────────────────────
+async function loadFromBin(){
+  setSyncStatus('loading','Chargement…');
+  try {
+    const r = await fetch(BIN_URL+'/latest', {
+      headers:{'X-Master-Key':API_KEY,'X-Bin-Meta':'false'}
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    apporteurs = data.apporteurs || [];
+    clients    = data.clients    || [];
+    paiements  = data.paiements  || [];
+    // Cache local
+    lsSet('ap_cache', apporteurs);
+    lsSet('cl_cache', clients);
+    lsSet('pa_cache', paiements);
+    setSyncStatus('ok','Synchronisé · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+    return true;
+  } catch(e){
+    // Fallback cache local
+    apporteurs = lsGet('ap_cache') || [];
+    clients    = lsGet('cl_cache') || [];
+    paiements  = lsGet('pa_cache') || [];
+    setSyncStatus('error','Hors ligne – données locales');
+    return false;
+  }
+}
+
+// ── Sauvegarder vers JSONBin ─────────────────────
+async function saveAll(){
+  // Mise à jour cache local immédiate
+  lsSet('ap_cache', apporteurs);
+  lsSet('cl_cache', clients);
+  lsSet('pa_cache', paiements);
+  if(_saving) return;
+  _saving = true;
+  setSyncStatus('saving','Enregistrement…');
+  try {
+    const r = await fetch(BIN_URL, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},
+      body: JSON.stringify({apporteurs, clients, paiements})
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    setSyncStatus('ok','Enregistré · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e){
+    setSyncStatus('error','Erreur sauvegarde – données locales OK');
+  }
+  _saving = false;
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION ÉCRANS
+// ═══════════════════════════════════════════════
+const SCREENS=['screen-choice','screen-admin','screen-login','screen-app'];
+function showScreen(id){
+  SCREENS.forEach(s=>{
+    const el=document.getElementById(s);
+    el.classList.remove('visible');
+    if(s==='screen-choice') el.style.display='none';
+    else el.style.display='none';
+  });
+  const el=document.getElementById(id);
+  if(id==='screen-choice'){el.style.display='flex';}
+  else if(id==='screen-admin'){el.style.display='flex';el.classList.add('visible');loadFromBin().then(()=>renderAdm());}
+  else if(id==='screen-login'){el.style.display='flex';el.classList.add('visible');}
+  else if(id==='screen-app'){el.style.display='flex';el.classList.add('visible');document.getElementById('fab').style.display='flex';}
+  if(id!=='screen-app') document.getElementById('fab').style.display='none';
+}
+
+function goAdmin(){showScreen('screen-admin')}
+function goPortail(){showScreen('screen-login')}
+function backChoice(){
+  currentAp=null;sessionStorage.removeItem('ap_code');
+  document.getElementById('code-input').value='';
+  document.getElementById('error-msg').textContent='';
+  showScreen('screen-choice');
+}
+
+// Init
+window.addEventListener('load', async ()=>{
+  showScreen('screen-choice');
+  await loadFromBin();
+  // Auto-login apporteur si session active
+  const saved=sessionStorage.getItem('ap_code');
+  if(saved){
+    const found=apporteurs.find(a=>(a.code||'').toUpperCase()===saved.toUpperCase());
+    if(found){currentAp=found;enterPortail();}
+  }
+});
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const COLORS=['#c8520a','#1a6b3a','#3a5fc1','#9a3ac1','#c13a7a','#2a8c7a'];
+const COLORSADM=['#e8b84b','#4be8a8','#4b9ee8','#e84b9e','#9e4be8'];
+function fmtE(n){return Number(n||0).toLocaleString('fr-FR')+' €'}
+function fmtD(d){if(!d)return'—';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`}
+function getAp(id){return apporteurs.find(a=>a.id===id)}
+function getCl(id){return clients.find(c=>c.id===id)}
+function clsOf(aid){return clients.filter(c=>c.apporteurId===aid)}
+function caOf(aid){return clients.filter(c=>c.apporteurId===aid&&c.statut==='Signé').reduce((s,c)=>s+(Number(c.ca)||0),0)}
+function primesV(aid){return paiements.filter(p=>p.apporteurId===aid).reduce((s,p)=>s+(Number(p.montantVerse)||0),0)}
+function initials(a){return((a.prenom||'?')[0]+(a.nom||'?')[0]).toUpperCase()}
+function acolor(id,arr=COLORSADM){return arr[id%arr.length]}
+
+// ═══════════════════════════════════════════════
+// ADMIN RENDER
+// ═══════════════════════════════════════════════
+function renderAdm(){renderDash();renderAp();renderCl();renderPr();}
+
+function admShow(id,el){
+  document.querySelectorAll('.adm-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.adm-nav').forEach(n=>n.classList.remove('active'));
+  document.getElementById('adm-'+id).classList.add('active');
+  el.classList.add('active');
+  renderAdm();
+}
+
+function renderDash(){
+  const totalCA=clients.filter(c=>c.statut==='Signé').reduce((s,c)=>s+(Number(c.ca)||0),0);
+  const totalPr=paiements.reduce((s,p)=>s+(Number(p.montantVerse)||0),0);
+  document.getElementById('k-ap').textContent=apporteurs.filter(a=>a.statut==='Actif').length;
+  document.getElementById('k-cl').textContent=clients.length;
+  document.getElementById('k-ca').textContent=fmtE(totalCA);
+  document.getElementById('k-pr').textContent=fmtE(totalPr);
+  document.getElementById('adm-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const sorted=[...apporteurs].sort((a,b)=>caOf(b.id)-caOf(a.id)).slice(0,5);
+  const tb=document.getElementById('top-table');
+  if(!sorted.length){tb.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-icon">◈</div>Aucun apporteur</div></td></tr>';return}
+  tb.innerHTML=sorted.map(a=>{
+    const nb=clsOf(a.id).length,sg=clsOf(a.id).filter(c=>c.statut==='Signé').length;
+    const ca=caOf(a.id),pr=primesV(a.id),tx=nb?Math.round(sg/nb*100):0;
+    return`<tr>
+      <td><div class="avatar-row"><div class="avatar" style="background:${acolor(a.id)}22;color:${acolor(a.id)}">${initials(a)}</div>
+      <div><div class="avatar-name">${a.prenom} ${a.nom}</div><div class="avatar-sector">${a.secteur||''}</div></div></div></td>
+      <td class="mono">${nb}</td><td class="mono text-acc">${fmtE(ca)}</td><td class="mono text-g">${fmtE(pr)}</td>
+      <td><div class="mono" style="font-size:11px">${tx}%</div><div class="progress-bar"><div class="progress-fill" style="width:${tx}%"></div></div></td>
+    </tr>`}).join('');
+}
+
+function renderAp(){
+  const q=(document.getElementById('srch-ap')?.value||'').toLowerCase();
+  const f=apporteurs.filter(a=>!q||(a.nom+a.prenom+a.secteur+(a.soc||'')).toLowerCase().includes(q));
+  const tb=document.getElementById('ap-table');
+  if(!f.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">◎</div>Aucun apporteur</div></td></tr>';return}
+  tb.innerHTML=f.map(a=>{
+    const nb=clsOf(a.id).length,ca=caOf(a.id);
+    return`<tr>
+      <td><div class="avatar-row"><div class="avatar" style="background:${acolor(a.id)}22;color:${acolor(a.id)}">${initials(a)}</div>
+      <div><div class="avatar-name">${a.prenom} ${a.nom}</div><div class="avatar-sector">${a.email||''}</div></div></div></td>
+      <td>${a.secteur||'<span class="text-muted">—</span>'}</td>
+      <td class="mono" style="font-size:11px;letter-spacing:.05em">${a.code||'<span class="text-muted">—</span>'}</td>
+      <td class="mono">${a.taux||0}%</td><td class="mono">${nb}</td>
+      <td class="mono text-acc">${fmtE(ca)}</td>
+      <td><span class="badge ${a.statut==='Actif'?'b-actif':'b-inactif'}">${a.statut}</span></td>
+      <td><div class="actions-row">
+        <button class="btn btn-ghost btn-sm" onclick="editAp(${a.id})">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="delAp(${a.id})">✕</button>
+      </div></td></tr>`}).join('');
+}
+
+function renderCl(){
+  const q=(document.getElementById('srch-cl')?.value||'').toLowerCase();
+  const f=clients.filter(c=>!q||(c.entreprise+(c.contact||'')+c.service).toLowerCase().includes(q));
+  const tb=document.getElementById('cl-table');
+  if(!f.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">◻</div>Aucun client</div></td></tr>';return}
+  tb.innerHTML=f.map(c=>{
+    const a=getAp(c.apporteurId);
+    const bc={Signé:'b-signe',Prospect:'b-prospect',Négocié:'b-negocie',Perdu:'b-perdu'}[c.statut]||'b-prospect';
+    return`<tr>
+      <td onclick="openFiche(${c.id})" style="cursor:pointer"><div class="avatar-name" style="color:#e8b84b;text-decoration:underline dotted;text-underline-offset:3px">${c.entreprise}</div><div class="avatar-sector">${c.contact||''}</div></td>
+      <td>${a?`<div class="avatar-row"><div class="avatar" style="background:${acolor(a.id)}22;color:${acolor(a.id)};width:22px;height:22px;font-size:10px">${initials(a)}</div>${a.prenom} ${a.nom}</div>`:'<span class="text-muted">—</span>'}</td>
+      <td>${c.service}</td>
+      <td class="mono text-acc">${c.ca?fmtE(c.ca):'<span class="text-muted">—</span>'}</td>
+      <td><span class="badge ${bc}">${c.statut}</span></td>
+      <td>${c.source==='portail'?'<span class="badge b-portail">Portail</span>':'<span class="text-muted" style="font-size:11px">Admin</span>'}</td>
+      <td class="mono text-muted">${c.date||'—'}</td>
+      <td><div class="actions-row">
+        <button class="btn btn-ghost btn-sm" onclick="editCl(${c.id})">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="delCl(${c.id})">✕</button>
+      </div></td></tr>`}).join('');
+}
+
+
+// ═══════════════════════════════════════════════
+// FICHE CLIENT (clic sur nom)
+// ═══════════════════════════════════════════════
+function openFiche(id){
+  const c=getCl(id);if(!c)return;
+  const a=getAp(c.apporteurId);
+  const bc={Signe:'b-signe',Prospect:'b-prospect',Negocie:'b-negocie',Perdu:'b-perdu'};
+  const bcKey={'Signe':'b-signe','Signé':'b-signe','Prospect':'b-prospect','Négocié':'b-negocie','Perdu':'b-perdu'};
+
+  document.getElementById('fiche-titre').textContent=c.entreprise;
+  document.getElementById('fiche-service').textContent=c.service+(c.source==='portail'?' · Saisi par apporteur':'');
+
+  const badge=document.getElementById('fiche-statut-badge');
+  badge.textContent=c.statut;
+  badge.className='badge '+(bcKey[c.statut]||'b-prospect');
+
+  document.getElementById('fiche-ca').textContent=c.ca?fmtE(c.ca):'Non renseigné';
+  document.getElementById('fiche-date').textContent=fmtD(c.date);
+
+  // Contact
+  const cont=document.getElementById('fiche-contact');
+  cont.textContent=c.contact||'Non renseigné';
+
+  const telEl=document.getElementById('fiche-tel');
+  if(c.tel){telEl.textContent=c.tel;telEl.href='tel:'+c.tel.replace(/\s/g,'');}
+  else{telEl.textContent='Non renseigné';telEl.href='#';}
+
+  const emailEl=document.getElementById('fiche-email');
+  if(c.email){emailEl.textContent=c.email;emailEl.href='mailto:'+c.email;}
+  else{emailEl.textContent='Non renseigné';emailEl.href='#';}
+
+  // Apporteur
+  const apRow=document.getElementById('fiche-apporteur-row');
+  if(a){
+    const col=acolor(a.id);
+    apRow.innerHTML=`<div class="avatar" style="background:${col}22;color:${col};width:30px;height:30px;font-size:12px">${initials(a)}</div>
+      <div><div style="font-weight:500;font-size:13px">${a.prenom} ${a.nom}</div>
+      <div style="font-size:11px;color:#5a6070">${a.secteur||''} ${a.tel?'&nbsp;·&nbsp;'+a.tel:''}</div></div>`;
+  } else {
+    apRow.innerHTML='<span style="color:#5a6070">Non rattaché</span>';
+  }
+
+  // Notes
+  document.getElementById('fiche-notes').textContent=c.notes||'Aucune note.';
+
+  // Bouton modifier
+  document.getElementById('fiche-edit-btn').onclick=()=>{closeModal('m-fiche');setTimeout(()=>editCl(id),80);};
+
+  document.getElementById('m-fiche').classList.add('open');
+}
+
+function renderPr(){
+  const td=paiements.reduce((s,p)=>s+(Number(p.primeCalculee)||0),0);
+  const tv=paiements.reduce((s,p)=>s+(Number(p.montantVerse)||0),0);
+  document.getElementById('pr-dues').textContent=fmtE(td);
+  document.getElementById('pr-vers').textContent=fmtE(tv);
+  document.getElementById('pr-rest').textContent=fmtE(td-tv);
+  document.getElementById('k-pr').textContent=fmtE(tv);
+  const tb=document.getElementById('pr-table');
+  if(!paiements.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">◆</div>Aucun paiement</div></td></tr>';return}
+  tb.innerHTML=[...paiements].reverse().map(p=>{
+    const a=getAp(p.apporteurId),c=getCl(p.clientId);
+    const reste=(p.primeCalculee||0)-(p.montantVerse||0);
+    const st=reste<=0?'Soldé':'Partiel';
+    return`<tr>
+      <td>${a?`${a.prenom} ${a.nom}`:'—'}</td>
+      <td>${c?c.entreprise:'—'}</td>
+      <td class="mono">${fmtE(p.ca)}</td>
+      <td class="mono text-acc">${fmtE(p.primeCalculee)}</td>
+      <td class="mono text-g">${fmtE(p.montantVerse)}</td>
+      <td class="mono text-muted">${p.date||'—'}</td>
+      <td><span class="badge ${st==='Soldé'?'b-signe':'b-negocie'}">${st}</span></td>
+    </tr>`}).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ADMIN CRUD
+// ═══════════════════════════════════════════════
+function openModal(id){
+  const opts=apporteurs.map(a=>`<option value="${a.id}">${a.prenom} ${a.nom}</option>`).join('');
+  document.querySelectorAll('#m-cl select#cl-ap,#m-pr select#pr-ap').forEach(s=>{
+    s.innerHTML='<option value="">— Sélectionner —</option>'+opts;
+  });
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  document.querySelectorAll(`#${id} input,#${id} textarea`).forEach(el=>{if(el.type!=='hidden')el.value=''});
+  document.querySelectorAll(`#${id} select`).forEach(el=>el.selectedIndex=0);
+  document.getElementById('ap-edit-id').value='';
+  document.getElementById('cl-edit-id').value='';
+}
+
+function saveAp(){
+  const eid=parseInt(document.getElementById('ap-edit-id').value);
+  const obj={prenom:document.getElementById('ap-prenom').value.trim(),nom:document.getElementById('ap-nom').value.trim(),
+    email:document.getElementById('ap-email').value.trim(),tel:document.getElementById('ap-tel').value.trim(),
+    soc:document.getElementById('ap-soc').value.trim(),secteur:document.getElementById('ap-sect').value.trim(),
+    taux:parseFloat(document.getElementById('ap-taux').value)||0,
+    code:document.getElementById('ap-code').value.trim().toUpperCase(),
+    statut:document.getElementById('ap-statut').value,
+    notes:document.getElementById('ap-notes').value.trim()};
+  if(!obj.prenom||!obj.nom){alert('Prénom et nom requis');return}
+  if(eid){const i=apporteurs.findIndex(a=>a.id===eid);apporteurs[i]={...apporteurs[i],...obj}}
+  else{obj.id=Date.now();apporteurs.push(obj)}
+  saveAll();closeModal('m-ap');renderAdm();
+}
+function editAp(id){
+  const a=getAp(id);
+  document.getElementById('ap-edit-id').value=a.id;
+  document.getElementById('ap-prenom').value=a.prenom;document.getElementById('ap-nom').value=a.nom;
+  document.getElementById('ap-email').value=a.email;document.getElementById('ap-tel').value=a.tel;
+  document.getElementById('ap-soc').value=a.soc||'';document.getElementById('ap-sect').value=a.secteur;
+  document.getElementById('ap-taux').value=a.taux;document.getElementById('ap-code').value=a.code||'';
+  document.getElementById('ap-statut').value=a.statut;document.getElementById('ap-notes').value=a.notes||'';
+  document.getElementById('m-ap-title').textContent='Modifier apporteur';
+  openModal('m-ap');
+}
+function delAp(id){if(!confirm('Supprimer ?'))return;apporteurs=apporteurs.filter(a=>a.id!==id);saveAll();renderAdm()}
+
+function saveCl(){
+  const eid=parseInt(document.getElementById('cl-edit-id').value);
+  const obj={entreprise:document.getElementById('cl-ent').value.trim(),
+    contact:document.getElementById('cl-contact').value.trim(),
+    apporteurId:parseInt(document.getElementById('cl-ap').value)||null,
+    service:document.getElementById('cl-service').value,
+    ca:parseFloat(document.getElementById('cl-ca').value)||0,
+    statut:document.getElementById('cl-statut').value,
+    date:document.getElementById('cl-date').value,
+    notes:document.getElementById('cl-notes').value.trim(),
+    source:'admin'};
+  if(!obj.entreprise){alert('Nom requis');return}
+  if(eid){const i=clients.findIndex(c=>c.id===eid);clients[i]={...clients[i],...obj}}
+  else{obj.id=Date.now();clients.push(obj)}
+  saveAll();closeModal('m-cl');renderAdm();
+}
+function editCl(id){
+  const c=getCl(id);
+  document.getElementById('cl-edit-id').value=c.id;
+  openModal('m-cl');
+  setTimeout(()=>{
+    document.getElementById('cl-ent').value=c.entreprise;
+    document.getElementById('cl-contact').value=c.contact||'';
+    document.getElementById('cl-ap').value=c.apporteurId||'';
+    document.getElementById('cl-service').value=c.service;
+    document.getElementById('cl-ca').value=c.ca;
+    document.getElementById('cl-statut').value=c.statut;
+    document.getElementById('cl-date').value=c.date||'';
+    document.getElementById('cl-notes').value=c.notes||'';
+    document.getElementById('m-cl-title').textContent='Modifier client';
+  },50);
+}
+function delCl(id){if(!confirm('Supprimer ?'))return;clients=clients.filter(c=>c.id!==id);saveAll();renderAdm()}
+
+function fillPrClients(){
+  const aid=parseInt(document.getElementById('pr-ap').value);
+  const cs=aid?clients.filter(c=>c.apporteurId===aid&&c.statut==='Signé'):[];
+  document.getElementById('pr-cl').innerHTML='<option value="">—</option>'+cs.map(c=>`<option value="${c.id}">${c.entreprise}</option>`).join('');
+  document.getElementById('pr-ca').value='';document.getElementById('pr-calc').value='';
+}
+function fillPrCalc(){
+  const cid=parseInt(document.getElementById('pr-cl').value);
+  const c=getCl(cid),a=c?getAp(c.apporteurId):null;
+  if(c&&a){document.getElementById('pr-ca').value=c.ca;document.getElementById('pr-calc').value=((c.ca*a.taux)/100).toFixed(2)}
+}
+function savePr(){
+  const obj={id:Date.now(),
+    apporteurId:parseInt(document.getElementById('pr-ap').value)||null,
+    clientId:parseInt(document.getElementById('pr-cl').value)||null,
+    ca:parseFloat(document.getElementById('pr-ca').value)||0,
+    primeCalculee:parseFloat(document.getElementById('pr-calc').value)||0,
+    montantVerse:parseFloat(document.getElementById('pr-mont').value)||0,
+    date:document.getElementById('pr-date').value,
+    mode:document.getElementById('pr-mode').value};
+  if(!obj.apporteurId){alert('Sélectionnez un apporteur');return}
+  paiements.push(obj);saveAll();closeModal('m-pr');renderAdm();
+}
+
+// ═══════════════════════════════════════════════
+// PORTAIL AUTH
+// ═══════════════════════════════════════════════
+let currentAp=null;
+
+document.getElementById('code-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin()});
+document.getElementById('code-input').addEventListener('input',()=>{
+  document.getElementById('error-msg').textContent='';
+  document.getElementById('code-input').classList.remove('error');
+});
+
+function tryLogin(){
+  const code=document.getElementById('code-input').value.trim().toUpperCase();
+  const found=apporteurs.find(a=>(a.code||'').toUpperCase()===code);
+  if(!found){
+    document.getElementById('error-msg').textContent='Code incorrect. Vérifiez votre code.';
+    document.getElementById('code-input').classList.add('error');
+    return;
+  }
+  currentAp=found;sessionStorage.setItem('ap_code',code);enterPortail();
+}
+function logout(){currentAp=null;sessionStorage.removeItem('ap_code');backChoice()}
+function enterPortail(){
+  showScreen('screen-app');
+  document.getElementById('header-name').textContent=`Bonjour, ${currentAp.prenom} 👋`;
+  document.getElementById('header-code').textContent=`Code : ${currentAp.code}`;
+  renderPortail();
+}
+
+// ═══════════════════════════════════════════════
+// PORTAIL NAV
+// ═══════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════
+// PORTAIL RENDER
+// ═══════════════════════════════════════════════
+function renderPortail(){renderPHome();renderPClients();renderPPrimes();renderPProfil()}
+
+function myClients(){return clients.filter(c=>c.apporteurId===currentAp.id)}
+function myPaiements(){return paiements.filter(p=>p.apporteurId===currentAp.id)}
+
+function renderPHome(){
+  const mc=myClients(),sg=mc.filter(c=>c.statut==='Signé');
+  const ca=sg.reduce((s,c)=>s+(Number(c.ca)||0),0);
+  const tx=mc.length?Math.round(sg.length/mc.length*100):0;
+  document.getElementById('p-kpi-nb').textContent=mc.length;
+  document.getElementById('p-kpi-sg').textContent=sg.length;
+  document.getElementById('p-kpi-ca').textContent=fmtE(ca);
+  document.getElementById('p-cl-count').textContent=mc.length;
+  const circ=163.4;
+  document.getElementById('ring-c').style.strokeDashoffset=circ-(circ*tx/100);
+  document.getElementById('ring-pct').textContent=tx+'%';
+  document.getElementById('ring-desc').textContent=`${sg.length} signé${sg.length>1?'s':''} sur ${mc.length} affaire${mc.length>1?'s':''}.`;
+  const last3=[...mc].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,3);
+  document.getElementById('home-list').innerHTML=last3.length?last3.map(pClientCard).join('')
+    :`<div class="empty-state"><div class="ei">◻</div><div class="et">Aucun client enregistré.</div></div>`;
+}
+
+function renderPClients(){
+  const mc=myClients().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('p-all-count').textContent=mc.length;
+  document.getElementById('all-list').innerHTML=mc.length?mc.map(pClientCard).join('')
+    :`<div class="empty-state"><div class="ei">◻</div><div class="et">Aucun client. Utilisez le bouton + pour en ajouter un.</div></div>`;
+}
+
+function pClientCard(c){
+  const dc={Signé:'signe',Prospect:'prospect',Négocié:'negocie',Perdu:'perdu'}[c.statut]||'prospect';
+  const src=c.source==='portail'?`<span class="pb-portail" style="background:#fff3cd;color:#856404;font-size:8px;padding:1px 5px;border-radius:3px;font-family:monospace;text-transform:uppercase;margin-left:3px">Saisi</span>`:'';
+  const ct=(c.contact||c.tel)?`<div class="client-meta" style="margin-top:2px"><span>${[c.contact,c.tel].filter(Boolean).join(' · ')}</span></div>`:'';
+  return`<div class="client-card">
+    <div class="client-dot dot-${dc}"></div>
+    <div class="client-body">
+      <div class="client-name">${c.entreprise}${src}</div>
+      <div class="client-meta"><span class="p-badge pb-${dc}">${c.statut}</span><span>${c.service}</span></div>${ct}
+    </div>
+    <div class="client-right">
+      <div class="client-ca">${c.ca?fmtE(c.ca):'—'}</div>
+      <div class="client-date">${fmtD(c.date)}</div>
+    </div>
+  </div>`;
+}
+
+function renderPPrimes(){
+  const mp=myPaiements();
+  const tv=mp.reduce((s,p)=>s+(Number(p.montantVerse)||0),0);
+  const td=mp.reduce((s,p)=>s+(Number(p.primeCalculee)||0),0);
+  const sg=myClients().filter(c=>c.statut==='Signé');
+  const pids=mp.map(p=>p.clientId);
+  const extra=sg.filter(c=>!pids.includes(c.id)).reduce((s,c)=>s+(c.ca*(currentAp.taux||0)/100),0);
+  document.getElementById('p-vers').textContent=fmtE(tv);
+  document.getElementById('p-rest').textContent=fmtE((td-tv)+extra);
+  const list=document.getElementById('prime-list');
+  if(!sg.length){list.innerHTML=`<div class="empty-state"><div class="ei">◆</div><div class="et">Aucune prime pour le moment.</div></div>`;return}
+  list.innerHTML=sg.map(c=>{
+    const p=mp.find(p=>p.clientId===c.id);
+    const due=p?p.primeCalculee:(c.ca*(currentAp.taux||0)/100);
+    const ver=p?p.montantVerse:0;
+    const pct=due>0?Math.round(ver/due*100):0;
+    const partial=ver>0&&ver<due,solde=ver>=due&&due>0;
+    return`<div class="prime-card">
+      <div class="prime-head">
+        <div><div class="prime-client">${c.entreprise}</div><div style="font-size:11px;color:#8a7e70;margin-top:1px">${c.service} · ${fmtD(c.date)}</div></div>
+        <div class="prime-amount">${fmtE(due)}</div>
+      </div>
+      <div class="prime-bar-label"><span>Versé : ${fmtE(ver)}</span><span>${pct}%</span></div>
+      <div class="prime-bar"><div class="prime-bar-fill ${partial?'partial':''}" style="width:${pct}%"></div></div>
+      <div class="prime-footer"><span>${p?.mode||'—'}</span>
+        <span class="p-badge ${solde?'pb-signe':ver>0?'pb-negocie':'pb-prospect'}">${solde?'Soldé':ver>0?'Partiel':'En attente'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPProfil(){
+  const a=currentAp,c=COLORS[a.id%COLORS.length];
+  document.getElementById('p-avatar').style.background=c;
+  document.getElementById('p-avatar').textContent=initials(a);
+  document.getElementById('p-name').textContent=`${a.prenom} ${a.nom}`;
+  document.getElementById('p-sector').textContent=a.secteur||'Apporteur d\'affaires';
+  document.getElementById('p-code').textContent=a.code||'—';
+  document.getElementById('p-taux').textContent=`${a.taux||0}%`;
+  document.getElementById('p-email').textContent=a.email||'—';
+  document.getElementById('p-tel').textContent=a.tel||'—';
+  document.getElementById('p-statut').textContent=a.statut||'—';
+}
+
+// ═══════════════════════════════════════════════
+// DRAWER
+// ═══════════════════════════════════════════════
+function openDrawer(){
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('d-ent').focus(),340);
+}
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+  document.body.style.overflow='';
+}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+}
+function submitClient(){
+  const ent=document.getElementById('d-ent').value.trim();
+  if(!ent){showToast('⚠️ Indiquez le nom de l\'entreprise');document.getElementById('d-ent').focus();return}
+  const nc={id:Date.now(),entreprise:ent,
+    contact:document.getElementById('d-contact').value.trim(),
+    tel:document.getElementById('d-tel').value.trim(),
+    email:document.getElementById('d-email').value.trim(),
+    apporteurId:currentAp.id,
+    service:document.getElementById('d-service').value,
+    ca:0,statut:'Prospect',
+    date:new Date().toISOString().split('T')[0],
+    notes:document.getElementById('d-notes').value.trim(),
+    source:'portail'};
+  clients.push(nc);saveAll();
+  ['d-ent','d-contact','d-tel','d-email','d-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('d-service').selectedIndex=0;
+  closeDrawer();renderPortail();
+  showToast('✓ Mise en relation envoyée !','green');
+  setTimeout(()=>showPage('clients'),400);
+}
+</script>
+</body>
+</html>
